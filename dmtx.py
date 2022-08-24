@@ -15,7 +15,8 @@ import time,json
 b = True
 
 def menu():
-    print (" - - - DMTxDIY - - -")
+    print ("")
+    print ("                    - - - DMTxDIY - - -")
     print ("f -read factory sensor data into file")
     print ("c -calibrate sensors !!! PLACE MASK ON THE TABLE !!!")
     print ("s - show settings for The Experience")

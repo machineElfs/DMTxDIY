@@ -28,6 +28,7 @@ def writeConfig(c,v):
     f = open('config.json','w')
     json.dump(settings,f)
     f.close()
+    return()
     
 def rewriteSet():
     showSet()
