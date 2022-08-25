@@ -17,13 +17,15 @@ b = True
 def menu():
     print ("")
     print ("                    - - - DMTxDIY - - -")
-    print ("f -read factory sensor data into file")
-    print ("c -calibrate sensors !!! PLACE MASK ON THE TABLE !!!")
+    print ("f - read factory sensor data into file")
+    print ("c - calibrate sensors !!! PLACE MASK ON THE TABLE !!!")
     print ("s - show settings for The Experience")
     print ("g - change settings for The Experience")
     print ("b - beeper is "+ str(b)+" for 3-2-1 countdown before each firing")
-    print("")
+    print ("h - help with settings")
+    print ("")
     print ("r - Run !!!")
+    print ("t - Test Run ! no actual burns will be triggered, instead the buzzer will beep")
     print ("to exit press Ctrl+c")
     print ("")
 
@@ -33,7 +35,8 @@ def menu():
 while True:
     menu()
     value = raw_input("option: ")
-    
+    if value == "h":
+        atom.Help()
     if value == "b":
         b = not b
     if value == "f":
@@ -49,13 +52,17 @@ while True:
         sCal.Calibrate(20)
         print ("Calibration data saved !")
     if value =="s":
+        print ("")
         print ("Current Experience settings: ")
+        print ("")
         atom.showSet()
     if value == "g":
         atom.Help()
         atom.rewriteSet()
     if value == "r":
         print("running")  
-        sensorsRun.run(20)
+        atom.fire("n")
         exit()
-        
+    if value == "t":
+        print ("Test Run initiated")
+        atom.fire("y")

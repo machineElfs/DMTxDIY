@@ -1,7 +1,9 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import serial,json
+import serial,json,time
+import beeper
+
 
 # Settings:
 def Help():
@@ -13,30 +15,42 @@ def Help():
     print ("6 RegularFire - lenght of time for all following automated burns (Seconds)")
     print ("7 TimeBetweeenFirings - lenght of time between automated burns (Seconds)")
     print ("8 NumberOfFirings - hom many rounds of automated delivery burns are desired")
-    print ("x - exit,      p - print settings")
+    print ("x - exit,      s - print settings")
 
 def showSet():
+    print ("- - - Current settings:  - - -")
+    print ("")
     f = open('config.json','r')
     global settings
     settings=json.load(f)
     for k,v in settings.items():
         print (k,v)
-    f.close()    
+    f.close()
+    print ("- - - - - - - - - - - - - - -")
+    ##send setting to DNA
+    ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=1, rtscts=False, dsrdtr=False)
+    #Send settings to DNA200
+    cmd=("T="+str(settings["Temperature"])+" F\r")
+    ser.write(cmd.encode())
+    cmd=("P="+str(settings["Power"])+" W\r")
+    ser.write(cmd.encode())
+    ser.close()    
 
 def writeConfig(c,v):
     settings[c] = int(v)
     f = open('config.json','w')
     json.dump(settings,f)
     f.close()
-    return()
+    showSet()
     
+        
 def rewriteSet():
     showSet()
     # write settings into file f
     value = raw_input(" Enter settings number to change or enter x to return to main menu:  ")
     if value == ("x"):
         return()
-    if value == ("p"):
+    if value == ("s"):
         showSet()
         Help()
     if value == ("1"):
@@ -85,14 +99,27 @@ def rewriteSet():
             c="NumberOfFirings"
             writeConfig(c,t)
 
-def fire():
+def burn(b):
     ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=1, rtscts=False, dsrdtr=False)
+    cmd=("F="+str(settings["InitialFire"])+" S\r")
+    ser.write(cmd.encode())
+    beeper.beep(settings["InitialFire"],0)
+    
+def fire(x,b):
+    showSet()    
+    if x==1:
+        print ("Test run in progress")
+    else:
+        print ("Initial warm up is :" + str((settings["InitialWarmup"])))
+        for i in range (settings["InitialWarmup"]):
+            time.sleep(1)
+            print (settings["InitialWarmup"])-(i+1)
+            if (settings["InitialWarmup"])-(i+1) < 3 and b==1:
+                beeper.beep(0.05,0)
+        
+        burn(b)
+        
 
-    #Send settings to DNA200
-    cmd=("T="+str(settings["Temperature"])+" F\r")
-    ser.write(cmd.encode())
-    cmd=("P="+str(settings["Power"])+" W\r")
-    ser.write(cmd.encode())
-    ser.close()
-    
-    
+fire(0,1)
+                
+        
