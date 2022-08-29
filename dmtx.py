@@ -8,7 +8,7 @@ Created on Mon Aug 22 21:44:22 2022
 
 ##Main program
 import readFactoryData as RFD
-import sensorsCalibrate as sCal
+import calibrateSensors as calS
 import sensorsRun, atom
 import time,json
 
@@ -24,8 +24,9 @@ def menu():
     print ("b - beeper is "+ str(b)+" for 3-2-1 countdown before each firing")
     print ("h - help with settings")
     print ("")
+    print ("m - Test the masks function (mask must be on the face) ")
     print ("r - Run !!!")
-    print ("t - Test Run ! no actual burns will be triggered, instead the buzzer will beep")
+    print ("t - Test Run ! no actual burns! buzzer will beep!")
     print ("to exit press Ctrl+c")
     print ("")
 
@@ -39,6 +40,13 @@ while True:
         atom.Help()
     if value == "b":
         b = not b
+    if value =="m":
+        print ("Testing mask sensors. Put mask on the face and breathe calmly")
+        print ("Test will start in")
+        for i in range(10):
+            print 10-i
+            time.sleep(1)
+        sensorsRun.maskTest(300)
     if value == "f":
         print (" Reading factory data - - - - ")
         with open("sensorInt.json", "w") as f:
@@ -49,7 +57,7 @@ while True:
     if value == "c":
         print (" MASK MUST BE PLACED ON THE TABLE ! ! !")
         print (" Reading calibration data - - - -")
-        sCal.Calibrate(20)
+        calS.calibrate(20)
         print ("Calibration data saved !")
     if value =="s":
         print ("")
@@ -65,4 +73,4 @@ while True:
         exit()
     if value == "t":
         print ("Test Run initiated")
-        atom.fire("y")
+        atom.fire("on","on")

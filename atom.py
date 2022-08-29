@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import serial,json,time
-import beeper
+import beeper,sensorsRun
 
 
 # Settings:
@@ -11,8 +11,8 @@ def Help():
     print ("2 Firing_time - length of time the coils are burning (Seconds)")
     print ("3 Power - power settings for firings (Watts)")
     print ("4 InitialWarmup  - time before the program starts running (Seconds)")
-    print ("5 InitialFire - length of the first burn (Seconds)")
-    print ("6 RegularFire - lenght of time for all following automated burns (Seconds)")
+    print ("5 InitialBurn - length of the first burn (Seconds)")
+    print ("6 RegularBurn - lenght of time for all following automated burns (Seconds)")
     print ("7 TimeBetweeenFirings - lenght of time between automated burns (Seconds)")
     print ("8 NumberOfFirings - hom many rounds of automated delivery burns are desired")
     print ("x - exit,      s - print settings")
@@ -78,13 +78,13 @@ def rewriteSet():
     if value =="5":
         t = raw_input(" Enter Initial burn lenght in (s) range(4-10): ")
         if (int(t)>3) and (int(t)<11):
-            c="InitialFire"
+            c="InitialBurn"
             writeConfig(c,t)
     
     if value =="6":
         t = raw_input(" Enter Regular burn lenght in (s) range(1-10): ")
         if (int(t)>0) and (int(t)<11):
-            c="RegularFire"
+            c="RegularBurn"
             writeConfig(c,t)
 
     if value =="7":
@@ -99,27 +99,57 @@ def rewriteSet():
             c="NumberOfFirings"
             writeConfig(c,t)
 
-def burn(b):
-    ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=1, rtscts=False, dsrdtr=False)
-    cmd=("F="+str(settings["InitialFire"])+" S\r")
-    ser.write(cmd.encode())
-    beeper.beep(settings["InitialFire"],0)
+def burn(test,length):
+    if test=="on":
+        print ("Test Burning")
+        sensorsRun.maskTest(length)
+        #beeper.beep(length,0)
     
-def fire(x,b):
+    else:
+        ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=1, rtscts=False, dsrdtr=False)
+        cmd=("F="+str(length)+" S\r")
+        ser.write(cmd.encode())
+        print ("Burning")
+        for i in range (length):
+            print length-i
+            time.sleep(1)
+
+    
+    
+def fire(test,buzz): 
     showSet()    
-    if x==1:
+    if test=="on":
         print ("Test run in progress")
     else:
-        print ("Initial warm up is :" + str((settings["InitialWarmup"])))
-        for i in range (settings["InitialWarmup"]):
+        print ("Countdown for lift-off")
+    for i in range ((settings["InitialWarmup"])-4):
+        print (settings["InitialWarmup"] - i - 1)
+        time.sleep(1)
+        
+    if test=="on":
+        beeper.beep3("on")
+        burn(test,settings["InitialBurn"])
+    else:
+        if buzz=="on":
+            beeper.beep3("on")
+        else:
+            beeper.beep3("off")
+        burn(test,settings["InitialBurn"])
+    print ("automated burns staring now")
+    
+    for i in range (settings["NumberOfFirings"])   :
+        for j in range ((settings["TimeBetweenFirings"])-4):
+            print ((settings["TimeBetweenFirings"])-j -1)
             time.sleep(1)
-            print (settings["InitialWarmup"])-(i+1)
-            if (settings["InitialWarmup"])-(i+1) < 3 and b==1:
-                beeper.beep(0.05,0)
-        
-        burn(b)
-        
-
-fire(0,1)
+        if buzz=="on":
+            beeper.beep3("on")
+        else:
+            beeper.beep3("off")  
+             
+        print ("Automatic burn #"+str(i+1))
+        burn(test,settings["RegularBurn"])
+            
+fire("on","on")
+#fire("off","on")
                 
         

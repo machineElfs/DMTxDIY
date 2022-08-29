@@ -1,1 +1,1 @@
-{"Firing_time": 5, "TimeBetweenFirings": 40, "InitialFire": 10, "Temperature": 200, "Power": 100, "InitialWarmup": 30, "RegularFire": 5, "NumberOfFirings": 10}
+{"Firing_time": 5, "TimeBetweenFirings": 40, "InitialBurn": 10, "Temperature": 200, "Power": 100, "InitialWarmup": 30, "RegularBurn": 5, "NumberOfFirings": 10}
