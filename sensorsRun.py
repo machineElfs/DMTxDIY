@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun  7 19:28:43 2022
+Created on Wed Aug 24 18:32:52 2022
 
-@author: pi
+@author: Elf Machine
 """
 
 import time,json,smbus,serial
@@ -120,8 +120,8 @@ def maskTest(cycles):
     GPIO.cleanup()
 
 def autoBurn(t):
-    print ("coilOn")
-    ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=1, rtscts=False, dsrdtr=False)
+    print ("CoilOn")
+    ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=0, rtscts=False, dsrdtr=False)
     cmd=("F="+str(t)+" S\r")
     ser.write(cmd.encode())
 
@@ -175,7 +175,8 @@ def run(cycles):
 
         if i > 30 :
             if one == 3:
-                autoBurn(0.2)
+                autoBurn(0.4)
+            
                 ## add counter of consequitive burns here !!!
     
     GPIO.output(14, False)

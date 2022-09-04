@@ -1,6 +1,10 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
+"""
+Created on Wed Aug 24 18:32:52 2022
 
+@author: Elf Machine
+"""
 import serial,json,time
 from multiprocessing import Process,Event
 import beeper,sensorsRun

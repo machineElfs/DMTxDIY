@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on Fri Aug 26 20:49:26 2022
+Created on Wed Aug 24 18:32:52 2022
 
-@author: pi
+@author: Elf Machine
 """
 import smbus,json
 import time
