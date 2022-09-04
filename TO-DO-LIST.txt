@@ -1,0 +1,9 @@
+TO-DO LIST
+
+change the design of the mask adapter so the internal pressure sensor
+is at the air entrance. This way it could be reading the pressure AND the 
+temperature of the incoming air to more accuratelly determine inhalations.
+
+
+in sensorsRun.py in the def run add a counter of sucsesfull  burns to 
+prevent multiple burns within the time the sensors are reading

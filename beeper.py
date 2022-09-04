@@ -35,4 +35,15 @@ def beep3(on): #m-mute
             print (3-i)
             time.sleep(1)
 
-
+def beeps():
+    
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(24, GPIO.OUT)
+    for i in range(3):
+        GPIO.output(24, True)
+        time.sleep(0.1)
+        GPIO.output(24, False)
+        time.sleep(0.9)
+    GPIO.cleanup()
+    
+#beeps()

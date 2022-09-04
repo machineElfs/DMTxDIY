@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import serial,json,time
+from multiprocessing import Process,Event
 import beeper,sensorsRun
 
 
 # Settings:
 def Help():
     print ("1 Temperature - temperature for repeated firing(F) ")
-    print ("2 Firing_time - length of time the coils are burning (Seconds)")
+    print ("2 Firing_time - time the sensor will wait for inhalations in auto burns (Seconds)")
     print ("3 Power - power settings for firings (Watts)")
     print ("4 InitialWarmup  - time before the program starts running (Seconds)")
     print ("5 InitialBurn - length of the first burn (Seconds)")
@@ -61,7 +62,7 @@ def rewriteSet():
         
     if value == "2":
         t = raw_input(" Enter Firing Time in (seconds) range(1-5): ")
-        if (int(t)>0) and (int(t)<6):
+        if (int(t)>0) and (int(t)<10):
             c = "Firing_time"
             writeConfig(c,t)
     if value == "3":
@@ -99,57 +100,73 @@ def rewriteSet():
             c="NumberOfFirings"
             writeConfig(c,t)
 
-def burn(test,length):
-    if test=="on":
-        print ("Test Burning")
-        sensorsRun.maskTest(length)
-        #beeper.beep(length,0)
-    
-    else:
-        ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=1, rtscts=False, dsrdtr=False)
-        cmd=("F="+str(length)+" S\r")
-        ser.write(cmd.encode())
-        print ("Burning")
-        for i in range (length):
-            print length-i
-            time.sleep(1)
-
-    
-    
-def fire(test,buzz): 
-    showSet()    
-    if test=="on":
-        print ("Test run in progress")
-    else:
-        print ("Countdown for lift-off")
+def initialBurn(buzz,length):    
+    print ("Countdown for lift-off")
     for i in range ((settings["InitialWarmup"])-4):
         print (settings["InitialWarmup"] - i - 1)
         time.sleep(1)
-        
-    if test=="on":
+    if buzz == "on":
         beeper.beep3("on")
-        burn(test,settings["InitialBurn"])
     else:
-        if buzz=="on":
-            beeper.beep3("on")
-        else:
-            beeper.beep3("off")
-        burn(test,settings["InitialBurn"])
-    print ("automated burns staring now")
-    
-    for i in range (settings["NumberOfFirings"])   :
-        for j in range ((settings["TimeBetweenFirings"])-4):
-            print ((settings["TimeBetweenFirings"])-j -1)
-            time.sleep(1)
-        if buzz=="on":
-            beeper.beep3("on")
-        else:
-            beeper.beep3("off")  
-             
-        print ("Automatic burn #"+str(i+1))
-        burn(test,settings["RegularBurn"])
+        beeper.beep3("off")    
+    ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=1, rtscts=False, dsrdtr=False)
+    cmd=("F="+str(length)+" S\r")
+    ser.write(cmd.encode())
+    print ("Burning")
+    for i in range (length):
+        print length-i
+        time.sleep(1)
             
-fire("on","on")
-#fire("off","on")
-                
+
+def buzz(event):
+    i=0
+    while True:
+        event.wait()
+        beeper.beeps()
+        event.clear()
+        i=i+1
+        if i ==  (settings["NumberOfFirings"]):
+            break
+    
+def autoLoop(event):
+    i=0
+    while True:
+        event.wait()
+        t = (settings["Firing_time"])*10 + 30
+        sensorsRun.run(t)
+        event.clear()
+        i=i+1
+        if i ==  (settings["NumberOfFirings"]):
+            break
         
+def main(b):        
+    global buzzEvent,burnEvent,autoLoopEvent,readSensorsEvent
+    
+    autoLoopEvent = Event()
+    buzzEvent = Event()
+    burnEvent = Event()
+    autoLoopProcess = Process(target = autoLoop, args = (autoLoopEvent,))
+    buzzerProcess = Process(target = buzz, args=(buzzEvent,))
+        
+    showSet()
+    initialBurn("on",(settings["InitialBurn"]))
+    print ("Automatic burns starting now")
+    buzzerProcess.start()
+    autoLoopProcess.start()
+
+    for i in range((settings["NumberOfFirings"])): 
+        print ("automatic firing #"+str(i+1))
+        for j in range(settings["TimeBetweenFirings"]):
+            print ("pause :"+ str(j))
+            time.sleep(1)
+            if j == (settings["TimeBetweenFirings"]-3):
+                if b:
+                   buzzEvent.set()
+                autoLoopEvent.set()
+    
+ 
+   
+    
+    
+
+                

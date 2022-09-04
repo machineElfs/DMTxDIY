@@ -30,9 +30,6 @@ def menu():
     print ("to exit press Ctrl+c")
     print ("")
 
-
-
-
 while True:
     menu()
     value = raw_input("option: ")
@@ -69,8 +66,8 @@ while True:
         atom.rewriteSet()
     if value == "r":
         print("running")  
-        atom.fire("n")
+        atom.main(b)
         exit()
     if value == "t":
         print ("Test Run initiated")
-        atom.fire("on","on")
+        atom.testRun("on","on") ## test=on buzzer=on

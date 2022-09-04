@@ -5,10 +5,11 @@ Created on Tue Jun  7 19:28:43 2022
 
 @author: pi
 """
-import time,json
+
+import time,json,smbus,serial
 import RPi.GPIO as GPIO
-import smbus
 bus = smbus.SMBus(1)
+
    
 def readCalib(sensor):
     with open(sensor, "rb") as f:
@@ -49,7 +50,6 @@ def readSensor(busN,calibData): #BusN is the sensor address
 
 
 def maskTest(cycles):
-    print("running") 
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(14, GPIO.OUT)
     GPIO.setup(24, GPIO.OUT)
@@ -70,12 +70,12 @@ def maskTest(cycles):
     m=[0,0,0]
     x=0
     y=0
-    
+    GPIO.output(24, False)
     for i in range(cycles):
         
         In = readSensor(SensorInt,InternalCalib)
         Ext = readSensor(SensorExt,ExternalCalib)
-        if ( In - diffOfAvg*0.85) < (Ext):##pressure drop
+        if ( In - diffOfAvg*0.87) < (Ext):##pressure drop
             x = 1
         else: ## pressure rise
             x = 0 
@@ -89,15 +89,10 @@ def maskTest(cycles):
             one = one + l[(len(l)-1-j)]
         for j in range(len(l)):
             two = two + l[(len(l)-1-j)]
-        #print one,two
-               
+ 
         if one == 3 or two == 4:
             #print("inhale")
             y=1
-        #    GPIO.output(24, True)
-            
-        
-            
         else:
             y=0
          #   GPIO.output(24, False)
@@ -113,18 +108,22 @@ def maskTest(cycles):
         for k in range(len(m)):
             
             one = one + m[k]
-        
-        
-        #for i in range(len(m)):
-        #    two = two + m[(len(m)-1-i)]
+
         if one == 3 :
             GPIO.output(24, True)
-            print one
+            print ("inhale")
         else:
+            print ""
             GPIO.output(24, False)
            
     GPIO.output(14, False)
     GPIO.cleanup()
+
+def autoBurn(t):
+    print ("coilOn")
+    ser = serial.Serial('/dev/ttyACM0',baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=1, rtscts=False, dsrdtr=False)
+    cmd=("F="+str(t)+" S\r")
+    ser.write(cmd.encode())
 
 def run(cycles):
     GPIO.setmode(GPIO.BCM)
@@ -136,7 +135,7 @@ def run(cycles):
         diffOfAvg = json.load(f)
     InternalCalib = readCalib("sensorInt.json")
     ExternalCalib = readCalib("sensorExt.json")
-    time.sleep(0.01)
+    time.sleep(0.02)
     bus.write_byte(SensorInt, 0x1E) #reset sensor
     time.sleep(0.01)
     bus.write_byte(SensorExt, 0x1E) #reset sensor
@@ -150,7 +149,7 @@ def run(cycles):
         
         In = readSensor(SensorInt,InternalCalib)
         Ext = readSensor(SensorExt,ExternalCalib)
-        if ( In - diffOfAvg*0.85) < (Ext):##pressure drop
+        if ( In - diffOfAvg*0.87) < (Ext):##pressure drop
             x = 1
         else: ## pressure rise
             x = 0 
@@ -173,21 +172,16 @@ def run(cycles):
 
         for k in range(len(m)):
             one = one + m[k]
-        
-        #for i in range(len(m)):
-        #    two = two + m[(len(m)-1-i)]
-        if one == 3 :
-            GPIO.output(24, True)
-            print one
-        else:
-            GPIO.output(24, False)
-           
+
+        if i > 30 :
+            if one == 3:
+                autoBurn(0.2)
+                ## add counter of consequitive burns here !!!
+    
     GPIO.output(14, False)
     GPIO.cleanup()
 
-   
-#GPIO.cleanup()
-#run(300)
+
 
 
 
