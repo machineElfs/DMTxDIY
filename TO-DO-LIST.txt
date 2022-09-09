@@ -4,6 +4,10 @@ change the design of the mask adapter so the internal pressure sensor
 is at the air entrance. This way it could be reading the pressure AND the 
 temperature of the incoming air to more accuratelly determine inhalations.
 
-
 in sensorsRun.py in the def run add a counter of sucsesfull  burns to 
 prevent multiple burns within the time the sensors are reading
+
+major rethink of the sensors. Use one sensor inside the mask reading at
+the highest precission (8-10 ms) and use another sensor next to the 
+RPi only reading once before the autofiring. Compare the more precise 
+internal meassurement to a fixed value from the RPi sensor.
